@@ -69,11 +69,13 @@ const recipes = [
   }
 ];
 
+
 /* -------------------------
    DOM Selection
 -------------------------- */
 
 const recipeContainer = document.querySelector("#recipe-container");
+
 
 /* -------------------------
    Create Recipe Card
@@ -97,18 +99,98 @@ const createRecipeCard = (recipe) => {
   `;
 };
 
+
 /* -------------------------
    Render Recipes
 -------------------------- */
 
 const renderRecipes = (recipesArray) => {
   recipeContainer.innerHTML = recipesArray
-    .map((recipe) => createRecipeCard(recipe))
+    .map(createRecipeCard)
     .join("");
 };
+
+
+/* -------------------------
+   Filter + Sort State
+-------------------------- */
+
+let activeFilter = "all";
+let activeSort = null;
+
+
+/* -------------------------
+   Pure Filter Function
+-------------------------- */
+
+const filterRecipes = (recipesArray, filterType) => {
+  if (filterType === "all") return recipesArray;
+
+  if (filterType === "quick") {
+    return recipesArray.filter((recipe) => recipe.time < 30);
+  }
+
+  return recipesArray.filter(
+    (recipe) => recipe.difficulty === filterType
+  );
+};
+
+
+/* -------------------------
+   Pure Sort Function
+-------------------------- */
+
+const sortRecipes = (recipesArray, sortType) => {
+  const copyArray = [...recipesArray];
+
+  if (sortType === "name") {
+    return copyArray.sort((a, b) =>
+      a.title.localeCompare(b.title)
+    );
+  }
+
+  if (sortType === "time") {
+    return copyArray.sort((a, b) => a.time - b.time);
+  }
+
+  return copyArray;
+};
+
+
+/* -------------------------
+   Central Update Display
+-------------------------- */
+
+const updateDisplay = () => {
+  let updatedRecipes = filterRecipes(recipes, activeFilter);
+
+  updatedRecipes = sortRecipes(updatedRecipes, activeSort);
+
+  renderRecipes(updatedRecipes);
+};
+
+
+/* -------------------------
+   Event Listeners
+-------------------------- */
+
+document.querySelectorAll("[data-filter]").forEach((button) => {
+  button.addEventListener("click", () => {
+    activeFilter = button.dataset.filter;
+    updateDisplay();
+  });
+});
+
+document.querySelectorAll("[data-sort]").forEach((button) => {
+  button.addEventListener("click", () => {
+    activeSort = button.dataset.sort;
+    updateDisplay();
+  });
+});
+
 
 /* -------------------------
    Initialize App
 -------------------------- */
 
-renderRecipes(recipes);
+updateDisplay();
